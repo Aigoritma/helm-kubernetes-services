@@ -1,0 +1,35 @@
+# applicationName: frontend
+containerPorts:
+  http:
+    port: 8081
+    protocol: TCP
+replicaCount: 1
+containerResources:
+  requests:
+    memory: "1024Mi"
+    cpu: "1"
+  limits:
+    memory: "4096Mi"
+    cpu: "2"
+service:
+  enabled: true
+  ports:
+    app:
+      port: 8081
+      targetPort: http
+      protocol: TCP
+envVars:
+  VUE_APP_HOST: "0.0.0.0"
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  path: /
+  pathType: Prefix
+  servicePort: app
+  hosts:
+    - frontend-{{ number }}.preprod.aigoritma.com
+containerImage:
+  repository: 026996776847.dkr.ecr.us-east-1.amazonaws.com/aigoritma/automl-frontend/frontend
+  # tag: develop-f45666e
+  pullPolicy: Always
