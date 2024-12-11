@@ -89,14 +89,20 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     {{- range $key, $value := .Values.additionalDeploymentLabels }}
-    {{ $key }}: {{ $value }}
+    {{ $key }}: "{{ $value }}"
     {{- end}}
 {{- with .Values.deploymentAnnotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  replicas: {{ if .isCanary }}{{ .Values.canary.replicaCount | default 1 }}{{ else }}{{ .Values.replicaCount }}{{ end }}
+{{- if .isCanary }}
+  replicas: {{ .Values.canary.replicaCount | default 1 }}
+{{ else }}
+{{- if not .Values.horizontalPodAutoscaler.enabled }} 
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+{{- end }}
 {{- if .Values.deploymentStrategy.enabled }}
   strategy:
     type: {{ .Values.deploymentStrategy.type }}
@@ -125,7 +131,7 @@ spec:
         gruntwork.io/deployment-type: main
         {{- end }}
         {{- range $key, $value := .Values.additionalPodLabels }}
-        {{ $key }}: {{ $value }}
+        {{ $key }}: "{{ $value }}"
         {{- end }}
 
       {{- with .Values.podAnnotations }}
